@@ -1,10 +1,11 @@
 package cn.blockmc.inventory;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.Statistic;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -33,50 +34,82 @@ public class GunPartInventoryListener implements Listener {
 
 	@EventHandler
 	public void onInvClicked(InventoryClickEvent e) {
-		if (e.getInventory().equals(inv)) {
-			// e.setCancelled(true);
-			Player p = (Player) e.getWhoClicked();
-			GunPartSlot slot = GunPartSlot.getSlot(e.getSlot());
-			ClickType clicktype = e.getClick();
-			ItemStack current = e.getCurrentItem();
-			ItemStack cursor = e.getCursor();
-			if (e.getClickedInventory() == null) {
+		if (e.getInventory().equals(inv)) {		
+			Inventory clickinv = e.getClickedInventory();
+			if(clickinv==null){
 				return;
 			}
-			if (e.getClickedInventory().equals(inv)) {
-				if (slot == null) {
-					e.setCancelled(true);
+			e.setCancelled(true);
+			Player p = (Player) e.getWhoClicked();
+			
+
+			////
+			int slot = e.getSlot();
+			
+			GunPartSlot gslot = GunPartSlot.getSlot(e.getSlot());
+//			ClickType clicktype = e.getClick();
+			ItemStack current = e.getCurrentItem();
+//			ItemStack cursor = e.getCursor();
+			////
+//			if(cursor==null||cursor.getType()==Material.AIR){
+//				return;
+//			}
+			if(clickinv.equals(inv)){
+				if(gslot==null){
 					return;
 				}
-				//TODO rewrite 
-				if (cursor.getType()!=Material.AIR) {
-					String parent = NMSItemStack.asNMSItemStack(cursor).getNBT().getString("parent");
-					String typenode = plugin.strings.get(parent);
-					if (typenode != null && typenode.equals(slot.getTypeNode())) {
-						String gunparent = NMSItemStack.asNMSItemStack(ginv.getGun()).getNBT().getString("parent");
-						List<String> allowparts = plugin.stringlists.get(gunparent+".AllowParts");
-						if (allowparts.contains(parent)) {
-							return;
-						}
-					}
-					e.setCancelled(true);
-					return;
+				int empty = p.getInventory().firstEmpty();
+				if(empty>=0){
+					Bukkit.broadcastMessage(current.toString());
+					String parent = NMSItemStack.asNMSItemStack(current).getNBT().getString("parent");
+					Bukkit.broadcastMessage(parent);
+					inv.clear(slot);
+					p.getInventory().addItem(plugin.getItem(parent));
 				}
 
-			} else {
-				if (clicktype == ClickType.SHIFT_LEFT || clicktype == ClickType.SHIFT_RIGHT
-						|| clicktype == ClickType.RIGHT) {
-					if (current != null && current.getType() != Material.AIR) {
-						ItemStack newcurrent = ginv.equipPart(current);
-						if (newcurrent != null) {
-							p.getInventory().setItem(e.getSlot(), newcurrent);
-						}
-						p.updateInventory();
-						e.setCancelled(true);
+			}else{
+				if(current.getType()!=Material.AIR){
+					ItemStack newcurrent = ginv.equipPart(current);
+					if(newcurrent!=null){
+						p.getInventory().setItem(e.getSlot(), newcurrent);
 					}
 				}
-				/////////////////////////
 			}
+
+//			if (e.getClickedInventory().equals(inv)) {
+//				if (slot == null) {
+//					e.setCancelled(true);
+//					return;
+//				}
+//				//TODO rewrite 
+//				if (cursor.getType()!=Material.AIR) {
+//					String parent = NMSItemStack.asNMSItemStack(cursor).getNBT().getString("parent");
+//					String typenode = plugin.strings.get(parent);
+//					if (typenode != null && typenode.equals(slot.getTypeNode())) {
+//						String gunparent = NMSItemStack.asNMSItemStack(ginv.getGun()).getNBT().getString("parent");
+//						List<String> allowparts = plugin.stringlists.get(gunparent+".AllowParts");
+//						if (allowparts.contains(parent)) {
+//							return;
+//						}
+//					}
+//					e.setCancelled(true);
+//					return;
+//				}
+//
+//			} else {
+//				if (clicktype == ClickType.SHIFT_LEFT || clicktype == ClickType.SHIFT_RIGHT
+//						|| clicktype == ClickType.RIGHT) {
+//					if (current != null && current.getType() != Material.AIR) {
+//						ItemStack newcurrent = ginv.equipPart(current);
+//						if (newcurrent != null) {
+//							p.getInventory().setItem(e.getSlot(), newcurrent);
+//						}
+//						p.updateInventory();
+//						e.setCancelled(true);
+//					}
+//				}
+//				/////////////////////////
+//			}
 		}
 	}
 
@@ -103,11 +136,21 @@ public class GunPartInventoryListener implements Listener {
 
 	private void destroy() {
 		HandlerList.unregisterAll(this);
+		listeners.remove(this);
 		ginv.destroy();
 	}
 
 	public static void addNewInvListener(GunPartInventory ginv) {
 		GunPartInventoryListener lis = new GunPartInventoryListener(ginv);
+		listeners.add(lis);
+	}
+	private static HashSet<GunPartInventoryListener> listeners = new HashSet<GunPartInventoryListener>();
+	public static void clearListeners(){
+		listeners.forEach(lis->{
+			lis.ginv.destroy();
+			HandlerList.unregisterAll(lis);
+		});
+		listeners.clear();
 	}
 
 }

@@ -82,36 +82,29 @@ public class NMSUtils {
 	}
 
 	public static void setField(String fieldname, Object o, Object value) {
-		Class<?> clazz = o.getClass();
 		try {
-			Field field = clazz.getField(fieldname);
-			field.setAccessible(true);
-			field.set(o, value);
-		} catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-			e.printStackTrace();
-
+			getField(fieldname, o.getClass()).set(o, value);
+		} catch (IllegalArgumentException | IllegalAccessException e1) {
+			e1.printStackTrace();
 		}
+		// Class<?> clazz = o.getClass();
+		// try {
+		// Field field = clazz.getField(fieldname);
+		// field.setAccessible(true);
+		// field.set(o, value);
+		// } catch (NoSuchFieldException | IllegalArgumentException |
+		// IllegalAccessException e) {
+		// e.printStackTrace();
+		//
+		// }
 	}
 
 	public static Field getField(String fieldname, Class<?> clazz) {
-		try {
-			Field field = clazz.getField(fieldname);
-			field.setAccessible(true);
-			return field;
-		} catch (NoSuchFieldException | SecurityException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	public static Object getField(String fieldname, Object o) {
-		Object f = null;
-		Class<?> clazz = o.getClass();
+		Field field = null;
 		while (true) {
 			try {
-				Field field = clazz.getDeclaredField(fieldname);
+				field = clazz.getDeclaredField(fieldname);
 				field.setAccessible(true);
-				f = field.get(o);
 				break;
 			} catch (NoSuchFieldException | SecurityException e) {
 				clazz = clazz.getSuperclass();
@@ -119,12 +112,51 @@ public class NMSUtils {
 					e.printStackTrace();
 					break;
 				}
-			} catch (IllegalArgumentException | IllegalAccessException e) {
+			} catch (IllegalArgumentException e) {
 				e.printStackTrace();
 				break;
 			}
 		}
+		// try {
+		// Field field = clazz.getField(fieldname);
+		// field.setAccessible(true);
+		// return field;
+		// } catch (NoSuchFieldException | SecurityException e) {
+		// e.printStackTrace();
+		// }
+		return field;
+	}
+
+	public static Object getField(String fieldname, Object o) {
+		Object f = null;
+		try {
+			f = getField(fieldname, o.getClass()).get(o);
+		} catch (IllegalArgumentException | IllegalAccessException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		return f;
+
+		// Object f = null;
+		// Class<?> clazz = o.getClass();
+		// while (true) {
+		// try {
+		// Field field = clazz.getDeclaredField(fieldname);
+		// field.setAccessible(true);
+		// f = field.get(o);
+		// break;
+		// } catch (NoSuchFieldException | SecurityException e) {
+		// clazz = clazz.getSuperclass();
+		// if (clazz == null) {
+		// e.printStackTrace();
+		// break;
+		// }
+		// } catch (IllegalArgumentException | IllegalAccessException e) {
+		// e.printStackTrace();
+		// break;
+		// }
+		// }
+		// return f;
 	}
 
 	public static Method getMethod(String name, Class<?> clazz, Class<?>[] parameterTypes) {

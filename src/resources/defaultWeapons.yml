@@ -8,3 +8,10 @@ M4A1:
   AllowParts:
     - "4xScope"
     - "6xScope"
+    - "Night_Vision"
+  Weapon_Information:
+    Shoot_Damage: 6
+    Offset_Damage: 1
+    Shoot_Speed: 10
+    Shoot_Range: 100
+    Bullet: "43mm_Bullet"

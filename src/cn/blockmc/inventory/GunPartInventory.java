@@ -46,7 +46,7 @@ public class GunPartInventory {
 			GunPartSlot slot = GunPartSlot.getByType(typenode);
 			ItemStack currentitem = inventory.getItem(slot.getInventoryID());
 			inventory.setItem(slot.getInventoryID(), part);
-			player.updateInventory();
+//			player.updateInventory();
 			return currentitem == null ? new ItemStack(Material.AIR) : currentitem;
 		}
 		return null;
