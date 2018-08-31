@@ -1,0 +1,5 @@
+api-version: 1.13
+name: ZaoGun
+version: 0.1
+author: Zao_hon
+main: cn.blockmc.ZaoGun
