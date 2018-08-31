@@ -33,7 +33,7 @@ public class ZaoGun extends JavaPlugin implements Listener {
 		this.getLogger().info("Gun started");
 		this.getServer().getPluginManager().registerEvents(this, this);
 		this.loadWeapons(null);
-//		this.loadParts(null);
+		this.loadParts(null);
 		GunPartInventory.init(this);
 
 	}
@@ -76,32 +76,27 @@ public class ZaoGun extends JavaPlugin implements Listener {
 	public void loadParts(Player p) {
 		String path = this.getDataFolder() + "/parts";
 		File tag = new File(path);
-		// File[] filelist = tag.listFiles();
-		String[] species = new String[] { "defaultScopes.yml","Barrel.yml" };
+		String[] species = new String[] { "defaultScopes.yml", "Barrel.yml" };
 		for (int i = 0; i < species.length; i++) {
 			String spec = species[i];
 			File dFile = new File(tag, spec);
-			PR(dFile.getAbsolutePath());
 			if (!dFile.exists()) {
 				dFile = grabDefaults(tag, spec);
 				try {
 					dFile.createNewFile();
 				} catch (IOException e) {
 				}
-				PR("add Default "+dFile.getName());
+				PR("add Default " + dFile.getName());
 			}
-			fillHashMaps(loadConfig(dFile, p),dFile.getName());
-			
+			fillHashMaps(loadConfig(dFile, p), dFile.getName());
+
 		}
 
 	}
 
 	public void loadWeapons(Player p) {
-		PR("load weapon");
 		String path = this.getDataFolder() + "/weapons";
-		PR(path);
 		File tag = new File(path);
-		PR(tag.getAbsolutePath());
 		File[] filelist = tag.listFiles();
 		if (filelist == null || filelist.length == 0) {
 			String[] specials = { "defaultScopes.yml" };
@@ -109,9 +104,7 @@ public class ZaoGun extends JavaPlugin implements Listener {
 			int lenth = (arrayOfString1 = specials).length;
 			for (int i = 0; i < lenth; i++) {
 				String spec = arrayOfString1[i];
-				PR(spec);
 				File dFile = grabDefaults(tag, spec);
-				PR(dFile.getAbsolutePath());
 				if (dFile != null) {
 					try {
 						dFile.createNewFile();
@@ -137,17 +130,6 @@ public class ZaoGun extends JavaPlugin implements Listener {
 		}
 		// completeList();
 	}
-
-	// public void loadScopes(Player p) {
-	// String path = this.getDataFolder() + "/weapons";
-	// File tag = new File(path);
-	// File[] filelist = tag.listFiles();
-	//
-	// if (filelist == null) {
-	// System.out.print("[CrackShot] No weapons were loaded!");
-	// return;
-	// }
-	// }
 
 	public YamlConfiguration loadConfig(File file, Player player) {
 		YamlConfiguration config = new YamlConfiguration();
@@ -185,8 +167,8 @@ public class ZaoGun extends JavaPlugin implements Listener {
 				strings.put(string, (String) obj);
 			}
 		}
-		for(String parent:config.getKeys(false)){
-			if(type!=null){
+		for (String parent : config.getKeys(false)) {
+			if (type != null) {
 				strings.put(parent, type);
 			}
 		}
@@ -194,19 +176,13 @@ public class ZaoGun extends JavaPlugin implements Listener {
 	}
 
 	private File grabDefaults(File directories, String path) {
-		File file = new File(directories,path);
+		File file = new File(directories, path);
 		PR(file.getAbsolutePath());
-
-//		File file = new File(getDataFolder() + tag +"/"+ path);
-//		File directories = new File(getDataFolder() + tag);
 		if (!directories.exists()) {
 			directories.mkdirs();
 		}
-//		InputStream inputStream = this.getClass().getResourceAsStream("/" + path);
-		InputStream inputStream = this.getClass().getResourceAsStream("/"+path);
-//		PR(inputStream.toString());
+		InputStream inputStream = this.getClass().getResourceAsStream("/resources/" + path);
 		if (inputStream == null) {
-			PR("s");
 			return null;
 		}
 		try {
