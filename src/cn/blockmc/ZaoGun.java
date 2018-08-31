@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
@@ -60,15 +61,15 @@ public class ZaoGun extends JavaPlugin implements Listener {
 	@EventHandler
 	public void cc(PlayerMoveEvent e) {
 		Player p = e.getPlayer();
-//		ItemStack item = new ItemStack(Material.DIAMOND_AXE);
-//		NMSItemStack nmsitem = NMSItemStack.asNMSItemStack(item);
-//		NBTComponent nbt = nmsitem.getNBT().setString("scope", "4xScope");
-//		nmsitem.setNBT(nbt);
-//		p.getInventory().addItem(nmsitem.asNewItemStack());
+		// ItemStack item = new ItemStack(Material.DIAMOND_AXE);
+		// NMSItemStack nmsitem = NMSItemStack.asNMSItemStack(item);
+		// NBTComponent nbt = nmsitem.getNBT().setString("scope", "4xScope");
+		// nmsitem.setNBT(nbt);
+		// p.getInventory().addItem(nmsitem.asNewItemStack());
 		NMSItemStack nms = NMSItemStack.asNMSItemStack(e.getPlayer().getInventory().getItemInMainHand());
-		NBTTagCompound n = (NBTTagCompound)nms.getNBT().getTag();
-		n.getKeys().forEach(key->{
-			Bukkit.broadcastMessage(key+" "+n.get(key));
+		NBTTagCompound n = (NBTTagCompound) nms.getNBT().getTag();
+		n.getKeys().forEach(key -> {
+			Bukkit.broadcastMessage(key + " " + n.get(key));
 		});
 	}
 
@@ -80,7 +81,7 @@ public class ZaoGun extends JavaPlugin implements Listener {
 		// NBTUtils.getNBT(NBTUtils.getNMSItemStack(item));
 		// ItemStack item = NBTUtils.getNMSItemStack(item);
 		// PR(n.getClass().getName());
-		
+
 		new GunPartInventory(p.getInventory().getItemInMainHand(), p);
 
 	}
@@ -130,7 +131,6 @@ public class ZaoGun extends JavaPlugin implements Listener {
 			filelist = tag.listFiles();
 			PR("Default Weapon Add");
 		}
-
 		if (filelist == null) {
 			System.out.print("[CrackShot] No weapons were loaded!");
 			return;
@@ -140,7 +140,7 @@ public class ZaoGun extends JavaPlugin implements Listener {
 		for (int i = 0; i < lenth; i++) {
 			File file = arrayOfFile1[i];
 			if (file.getName().endsWith(".yml")) {
-				fillHashMaps(loadConfig(file, p), null);
+				fillHashMaps(loadConfig(file, p), "Gun");
 			}
 		}
 		// completeList();
@@ -173,14 +173,17 @@ public class ZaoGun extends JavaPlugin implements Listener {
 	public void fillHashMaps(YamlConfiguration config, String type) {
 		for (String string : config.getKeys(true)) {
 			Object obj = config.get(string);
+			PR(string + " " + obj);
 			if ((obj instanceof Boolean)) {
 				booleans.put(string, (Boolean) obj);
 			} else if ((obj instanceof Integer)) {
 				ints.put(string, (Integer) obj);
 			} else if ((obj instanceof String)) {
-				PR(string+" "+obj);
 				obj = ((String) obj).replaceAll("&", "§");
 				strings.put(string, (String) obj);
+			} else if (obj instanceof List<?>) {
+				List<?> list = (List<?>) obj;
+
 			}
 		}
 		for (String parent : config.getKeys(false)) {

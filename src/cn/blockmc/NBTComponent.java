@@ -1,12 +1,6 @@
 package cn.blockmc;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
-
-import org.bukkit.Bukkit;
-
-import net.minecraft.server.v1_13_R1.NBTTagCompound;
 
 public class NBTComponent {
 	private Object nbtcompount;
@@ -32,17 +26,6 @@ public class NBTComponent {
 	}
 
 	public NBTComponent setInt(String k, int v) {
-
-		// Method[] ms = nbtcompount.getClass().getDeclaredMethods();
-		// for(int i=0;i<ms.length;i++){
-		// Method m = ms[i];
-		// Bukkit.broadcastMessage(m.getName());
-		// Class[] cs = m.getParameterTypes();
-		// for(int j=0;j<cs.length;j++){
-		// Bukkit.broadcastMessage(cs[j].getName());
-		// }
-		// Bukkit.broadcastMessage(" ");
-		// }
 		try {
 			NMSUtils.getMethod("setInt", nbtcompount.getClass(), new Class<?>[] { String.class, int.class })
 					.invoke(nbtcompount, new Object[] { k, v });
