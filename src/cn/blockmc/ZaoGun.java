@@ -33,7 +33,7 @@ public class ZaoGun extends JavaPlugin implements Listener {
 		this.getLogger().info("Gun started");
 		this.getServer().getPluginManager().registerEvents(this, this);
 		this.loadWeapons(null);
-		this.loadParts(null);
+//		this.loadParts(null);
 		GunPartInventory.init(this);
 
 	}
@@ -97,8 +97,11 @@ public class ZaoGun extends JavaPlugin implements Listener {
 	}
 
 	public void loadWeapons(Player p) {
+		PR("load weapon");
 		String path = this.getDataFolder() + "/weapons";
+		PR(path);
 		File tag = new File(path);
+		PR(tag.getAbsolutePath());
 		File[] filelist = tag.listFiles();
 		if (filelist == null || filelist.length == 0) {
 			String[] specials = { "defaultScopes.yml" };
@@ -106,7 +109,9 @@ public class ZaoGun extends JavaPlugin implements Listener {
 			int lenth = (arrayOfString1 = specials).length;
 			for (int i = 0; i < lenth; i++) {
 				String spec = arrayOfString1[i];
+				PR(spec);
 				File dFile = grabDefaults(tag, spec);
+				PR(dFile.getAbsolutePath());
 				if (dFile != null) {
 					try {
 						dFile.createNewFile();
@@ -189,8 +194,8 @@ public class ZaoGun extends JavaPlugin implements Listener {
 	}
 
 	private File grabDefaults(File directories, String path) {
-		PR(directories.getName());PR(path);
 		File file = new File(directories,path);
+		PR(file.getAbsolutePath());
 
 //		File file = new File(getDataFolder() + tag +"/"+ path);
 //		File directories = new File(getDataFolder() + tag);
@@ -198,7 +203,8 @@ public class ZaoGun extends JavaPlugin implements Listener {
 			directories.mkdirs();
 		}
 //		InputStream inputStream = this.getClass().getResourceAsStream("/" + path);
-		InputStream inputStream = this.getClass().getResourceAsStream("/"+"defaultScopes.yml");
+		InputStream inputStream = this.getClass().getResourceAsStream("/"+path);
+//		PR(inputStream.toString());
 		if (inputStream == null) {
 			PR("s");
 			return null;
@@ -215,7 +221,8 @@ public class ZaoGun extends JavaPlugin implements Listener {
 			output.close();
 
 			return file;
-		} catch (Exception localException) {
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		return null;
 	}
