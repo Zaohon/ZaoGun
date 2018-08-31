@@ -10,19 +10,16 @@ import net.minecraft.server.v1_13_R1.NBTTagCompound;
 
 public class NBTComponent {
 	private Object nbtcompount;
-	// private Map<Object, Object> map;
 
 	public NBTComponent(Object nbtcompount) {
 		this.nbtcompount = nbtcompount;
-		// this.map = (Map<Object, Object>) NMSUtils.getField("map",
-		// this.nbtcompount);
 	}
-
-	// public Map<?, ?> getMap() {
-	// return map;
-	// }
 	public Object getTag() {
 		return nbtcompount;
+	}
+	public NBTComponent remove(String k){
+		NMSUtils.invokeMethod("remove", nbtcompount,new Object[]{k});
+		return this;
 	}
 
 	public NBTComponent setString(String k, String v) {
@@ -35,8 +32,6 @@ public class NBTComponent {
 	}
 
 	public NBTComponent setInt(String k, int v) {
-
-//		NBTTagCompound n = (NBTTagCompound) nbtcompount;
 
 		// Method[] ms = nbtcompount.getClass().getDeclaredMethods();
 		// for(int i=0;i<ms.length;i++){

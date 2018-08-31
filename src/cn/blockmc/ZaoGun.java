@@ -5,9 +5,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -18,9 +20,11 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import cn.blockmc.inventory.GunPartInventory;
+import net.minecraft.server.v1_13_R1.NBTTagCompound;
 
 public class ZaoGun extends JavaPlugin implements Listener {
 	public Map<String, ItemStack> scopes = new HashMap<String, ItemStack>();
@@ -55,6 +59,17 @@ public class ZaoGun extends JavaPlugin implements Listener {
 
 	@EventHandler
 	public void cc(PlayerMoveEvent e) {
+		Player p = e.getPlayer();
+//		ItemStack item = new ItemStack(Material.DIAMOND_AXE);
+//		NMSItemStack nmsitem = NMSItemStack.asNMSItemStack(item);
+//		NBTComponent nbt = nmsitem.getNBT().setString("scope", "4xScope");
+//		nmsitem.setNBT(nbt);
+//		p.getInventory().addItem(nmsitem.asNewItemStack());
+		NMSItemStack nms = NMSItemStack.asNMSItemStack(e.getPlayer().getInventory().getItemInMainHand());
+		NBTTagCompound n = (NBTTagCompound)nms.getNBT().getTag();
+		n.getKeys().forEach(key->{
+			Bukkit.broadcastMessage(key+" "+n.get(key));
+		});
 	}
 
 	@EventHandler
@@ -65,33 +80,33 @@ public class ZaoGun extends JavaPlugin implements Listener {
 		// NBTUtils.getNBT(NBTUtils.getNMSItemStack(item));
 		// ItemStack item = NBTUtils.getNMSItemStack(item);
 		// PR(n.getClass().getName());
-		new GunPartInventory(null, p);
-
-	}
-
-	public void openGunGUI(PlayerInteractEvent e) {
+		
+		new GunPartInventory(p.getInventory().getItemInMainHand(), p);
 
 	}
 
 	public void loadParts(Player p) {
 		String path = this.getDataFolder() + "/parts";
 		File tag = new File(path);
-		String[] species = new String[] { "defaultScopes.yml", "Barrel.yml" };
-		for (int i = 0; i < species.length; i++) {
-			String spec = species[i];
-			File dFile = new File(tag, spec);
-			if (!dFile.exists()) {
-				dFile = grabDefaults(tag, spec);
+		File[] listfile = tag.listFiles();
+		if (listfile == null || listfile.length == 0) {
+			String[] species = new String[] { "Scopes.yml", "Barrel.yml" };
+			for (int i = 0; i < species.length; i++) {
+				String spec = species[i];
+				File dFile = grabDefaults(tag, spec);
 				try {
 					dFile.createNewFile();
 				} catch (IOException e) {
 				}
-				PR("add Default " + dFile.getName());
+				PR("add Default " + dFile.getName().substring(0, dFile.getName().length() - 4));
 			}
-			fillHashMaps(loadConfig(dFile, p), dFile.getName());
+			listfile = tag.listFiles();
+		}
+		for (int i = 0; i < listfile.length; i++) {
+			File file = listfile[i];
+			this.fillHashMaps(loadConfig(file, p), file.getName().substring(0, file.getName().length() - 4));
 
 		}
-
 	}
 
 	public void loadWeapons(Player p) {
@@ -99,7 +114,7 @@ public class ZaoGun extends JavaPlugin implements Listener {
 		File tag = new File(path);
 		File[] filelist = tag.listFiles();
 		if (filelist == null || filelist.length == 0) {
-			String[] specials = { "defaultScopes.yml" };
+			String[] specials = { "defaultWeapons.yml" };
 			String[] arrayOfString1;
 			int lenth = (arrayOfString1 = specials).length;
 			for (int i = 0; i < lenth; i++) {
@@ -113,7 +128,7 @@ public class ZaoGun extends JavaPlugin implements Listener {
 				}
 			}
 			filelist = tag.listFiles();
-			PR("DefaultAdd");
+			PR("Default Weapon Add");
 		}
 
 		if (filelist == null) {
@@ -163,6 +178,7 @@ public class ZaoGun extends JavaPlugin implements Listener {
 			} else if ((obj instanceof Integer)) {
 				ints.put(string, (Integer) obj);
 			} else if ((obj instanceof String)) {
+				PR(string+" "+obj);
 				obj = ((String) obj).replaceAll("&", "§");
 				strings.put(string, (String) obj);
 			}
@@ -204,8 +220,28 @@ public class ZaoGun extends JavaPlugin implements Listener {
 	}
 
 	public ItemStack getItem(String parent) {
-		Material material = Material.valueOf(strings.get(parent + "Item_Information.Item_Material"));
+		Material material = Material.valueOf(strings.get(parent + ".Item_Information.Item_Material"));
 		ItemStack item = new ItemStack(material);
-		return null;
+		this.setDisplayName(item, strings.get(parent + ".Item_Information.Item_Name"));
+		this.setLore(item, strings.get(parent + ".Item_Information.Item_Lore"));
+		NMSItemStack nmsitem = NMSItemStack.asNMSItemStack(item);
+		NBTComponent nbt = nmsitem.getNBT();
+		nbt.setString("parent", parent);
+		nmsitem.setNBT(nbt);
+		return nmsitem.asNewItemStack();
+	}
+
+	public ItemStack setDisplayName(ItemStack item, String name) {
+		ItemMeta m = item.getItemMeta();
+		m.setDisplayName(name);
+		item.setItemMeta(m);
+		return item;
+	}
+
+	public ItemStack setLore(ItemStack item, String... lore) {
+		ItemMeta m = item.getItemMeta();
+		m.setLore(Arrays.asList(lore));
+		item.setItemMeta(m);
+		return item;
 	}
 }
