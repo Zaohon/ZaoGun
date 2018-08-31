@@ -1,0 +1,14 @@
+4xScope:
+  Item_Information:
+    Item_Name: 4xScope
+    Item_Lore: 4xScope
+    Item_Material: FIREWORK_STAR
+  Scope_Information:
+    Scope_Multiple: 6
+Night_Vision:
+  Item_Information:
+    Item_Name: Night_Vision
+    Item_Lore: Night_Vision
+    Item_Material: FIREWORK_STAR
+  Scope_Information:
+    Night_Vision: true

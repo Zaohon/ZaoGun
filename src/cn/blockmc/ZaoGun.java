@@ -8,10 +8,8 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,11 +17,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import net.minecraft.server.v1_13_R1.NBTTagCompound;
+import cn.blockmc.inventory.GunPartInventory;
 
 public class ZaoGun extends JavaPlugin implements Listener {
 	public Map<String, ItemStack> scopes = new HashMap<String, ItemStack>();
@@ -35,6 +32,9 @@ public class ZaoGun extends JavaPlugin implements Listener {
 	public void onEnable() {
 		this.getLogger().info("Gun started");
 		this.getServer().getPluginManager().registerEvents(this, this);
+		this.loadWeapons(null);
+		this.loadParts(null);
+		GunPartInventory.init(this);
 
 	}
 
@@ -65,10 +65,34 @@ public class ZaoGun extends JavaPlugin implements Listener {
 		// NBTUtils.getNBT(NBTUtils.getNMSItemStack(item));
 		// ItemStack item = NBTUtils.getNMSItemStack(item);
 		// PR(n.getClass().getName());
+		new GunPartInventory(null, p);
 
 	}
 
 	public void openGunGUI(PlayerInteractEvent e) {
+
+	}
+
+	public void loadParts(Player p) {
+		String path = this.getDataFolder() + "/parts";
+		File tag = new File(path);
+		// File[] filelist = tag.listFiles();
+		String[] species = new String[] { "defaultScopes.yml","Barrel.yml" };
+		for (int i = 0; i < species.length; i++) {
+			String spec = species[i];
+			File dFile = new File(tag, spec);
+			PR(dFile.getAbsolutePath());
+			if (!dFile.exists()) {
+				dFile = grabDefaults(tag, spec);
+				try {
+					dFile.createNewFile();
+				} catch (IOException e) {
+				}
+				PR("add Default "+dFile.getName());
+			}
+			fillHashMaps(loadConfig(dFile, p),dFile.getName());
+			
+		}
 
 	}
 
@@ -77,12 +101,12 @@ public class ZaoGun extends JavaPlugin implements Listener {
 		File tag = new File(path);
 		File[] filelist = tag.listFiles();
 		if (filelist == null || filelist.length == 0) {
-			String[] specials = { "defaultScopes" };
+			String[] specials = { "defaultScopes.yml" };
 			String[] arrayOfString1;
 			int lenth = (arrayOfString1 = specials).length;
 			for (int i = 0; i < lenth; i++) {
 				String spec = arrayOfString1[i];
-				File dFile = grabDefaults(spec);
+				File dFile = grabDefaults(tag, spec);
 				if (dFile != null) {
 					try {
 						dFile.createNewFile();
@@ -103,22 +127,22 @@ public class ZaoGun extends JavaPlugin implements Listener {
 		for (int i = 0; i < lenth; i++) {
 			File file = arrayOfFile1[i];
 			if (file.getName().endsWith(".yml")) {
-				fillHashMaps(loadConfig(file, p));
+				fillHashMaps(loadConfig(file, p), null);
 			}
 		}
 		// completeList();
 	}
 
-	public void loadScopes(Player p) {
-		String path = this.getDataFolder() + "/weapons";
-		File tag = new File(path);
-		File[] filelist = tag.listFiles();
-
-		if (filelist == null) {
-			System.out.print("[CrackShot] No weapons were loaded!");
-			return;
-		}
-	}
+	// public void loadScopes(Player p) {
+	// String path = this.getDataFolder() + "/weapons";
+	// File tag = new File(path);
+	// File[] filelist = tag.listFiles();
+	//
+	// if (filelist == null) {
+	// System.out.print("[CrackShot] No weapons were loaded!");
+	// return;
+	// }
+	// }
 
 	public YamlConfiguration loadConfig(File file, Player player) {
 		YamlConfiguration config = new YamlConfiguration();
@@ -144,7 +168,7 @@ public class ZaoGun extends JavaPlugin implements Listener {
 		return config;
 	}
 
-	public void fillHashMaps(YamlConfiguration config) {
+	public void fillHashMaps(YamlConfiguration config, String type) {
 		for (String string : config.getKeys(true)) {
 			Object obj = config.get(string);
 			if ((obj instanceof Boolean)) {
@@ -156,18 +180,27 @@ public class ZaoGun extends JavaPlugin implements Listener {
 				strings.put(string, (String) obj);
 			}
 		}
+		for(String parent:config.getKeys(false)){
+			if(type!=null){
+				strings.put(parent, type);
+			}
+		}
 
 	}
 
-	private File grabDefaults(String defaultfile) {
+	private File grabDefaults(File directories, String path) {
+		PR(directories.getName());PR(path);
+		File file = new File(directories,path);
 
-		File file = new File(getDataFolder() + "/weapons/" + defaultfile);
-		File directories = new File(getDataFolder() + "/weapons");
+//		File file = new File(getDataFolder() + tag +"/"+ path);
+//		File directories = new File(getDataFolder() + tag);
 		if (!directories.exists()) {
 			directories.mkdirs();
 		}
-		InputStream inputStream = this.getClass().getResourceAsStream("/" + defaultfile);
+//		InputStream inputStream = this.getClass().getResourceAsStream("/" + path);
+		InputStream inputStream = this.getClass().getResourceAsStream("/"+"defaultScopes.yml");
 		if (inputStream == null) {
+			PR("s");
 			return null;
 		}
 		try {
@@ -184,6 +217,12 @@ public class ZaoGun extends JavaPlugin implements Listener {
 			return file;
 		} catch (Exception localException) {
 		}
+		return null;
+	}
+
+	public ItemStack getItem(String parent) {
+		Material material = Material.valueOf(strings.get(parent + "Item_Information.Item_Material"));
+		ItemStack item = new ItemStack(material);
 		return null;
 	}
 }
