@@ -1,9 +1,15 @@
 package cn.blockmc.inventory;
 
+import java.util.List;
+
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.Statistic;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
@@ -28,10 +34,48 @@ public class GunPartInventoryListener implements Listener {
 	@EventHandler
 	public void onInvClicked(InventoryClickEvent e) {
 		if (e.getInventory().equals(inv)) {
-			e.setCancelled(true);
+			// e.setCancelled(true);
+			Player p = (Player) e.getWhoClicked();
 			GunPartSlot slot = GunPartSlot.getSlot(e.getSlot());
-			if (slot != null) {
-				
+			ClickType clicktype = e.getClick();
+			ItemStack current = e.getCurrentItem();
+			ItemStack cursor = e.getCursor();
+			if (e.getClickedInventory() == null) {
+				return;
+			}
+			if (e.getClickedInventory().equals(inv)) {
+				if (slot == null) {
+					e.setCancelled(true);
+					return;
+				}
+				//TODO rewrite 
+				if (cursor.getType()!=Material.AIR) {
+					String parent = NMSItemStack.asNMSItemStack(cursor).getNBT().getString("parent");
+					String typenode = plugin.strings.get(parent);
+					if (typenode != null && typenode.equals(slot.getTypeNode())) {
+						String gunparent = NMSItemStack.asNMSItemStack(ginv.getGun()).getNBT().getString("parent");
+						List<String> allowparts = plugin.stringlists.get(gunparent+".AllowParts");
+						if (allowparts.contains(parent)) {
+							return;
+						}
+					}
+					e.setCancelled(true);
+					return;
+				}
+
+			} else {
+				if (clicktype == ClickType.SHIFT_LEFT || clicktype == ClickType.SHIFT_RIGHT
+						|| clicktype == ClickType.RIGHT) {
+					if (current != null && current.getType() != Material.AIR) {
+						ItemStack newcurrent = ginv.equipPart(current);
+						if (newcurrent != null) {
+							p.getInventory().setItem(e.getSlot(), newcurrent);
+						}
+						p.updateInventory();
+						e.setCancelled(true);
+					}
+				}
+				/////////////////////////
 			}
 		}
 	}

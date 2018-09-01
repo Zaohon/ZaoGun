@@ -1,7 +1,14 @@
 4xScope:
   Item_Information:
-    Item_Name: 4xScope
-    Item_Lore: 4xScope
+    Item_Name: ¡ìf4xScope
+    Item_Lore: ¡ìf4xScope
+    Item_Material: FIREWORK_STAR
+  Scope_Information:
+    Scope_Multiple: 4
+6xScope:
+  Item_Information:
+    Item_Name: ¡ìb6xScope
+    Item_Lore: ¡ìb6xScope
     Item_Material: FIREWORK_STAR
   Scope_Information:
     Scope_Multiple: 6

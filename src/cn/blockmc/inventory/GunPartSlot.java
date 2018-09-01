@@ -25,5 +25,13 @@ public enum GunPartSlot {
 		}
 		return null;
 	}
+	public static GunPartSlot getByType(String typenode){
+		for(GunPartSlot slot:GunPartSlot.values()){
+			if(slot.typenode.equals(typenode)){
+				return slot;
+			}
+		}
+		return null;
+	}
 
 }

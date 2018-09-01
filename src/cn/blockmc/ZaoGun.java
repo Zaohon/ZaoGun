@@ -28,7 +28,7 @@ import cn.blockmc.inventory.GunPartInventory;
 import net.minecraft.server.v1_13_R1.NBTTagCompound;
 
 public class ZaoGun extends JavaPlugin implements Listener {
-	public Map<String, ItemStack> scopes = new HashMap<String, ItemStack>();
+	public Map<String, List<String>> stringlists = new HashMap<String, List<String>>();
 	public Map<String, Integer> ints = new HashMap<String, Integer>();
 	public Map<String, String> strings = new HashMap<String, String>();
 	public Map<String, Boolean> booleans = new HashMap<String, Boolean>();
@@ -49,12 +49,12 @@ public class ZaoGun extends JavaPlugin implements Listener {
 
 	@EventHandler
 	public void c(PlayerInteractEntityEvent e) {
-		ItemStack item = new ItemStack(Material.EGG);
-		NMSItemStack nmsitem = NMSItemStack.asNMSItemStack(item);
-		NBTComponent nbt = nmsitem.getNBT();
-		nbt.setInt("s", 1);
-		PR(nbt.getInt("s") + "");
-		e.getPlayer().getInventory().addItem(nmsitem.asNewItemStack());
+//		ItemStack item = new ItemStack(Material.EGG);
+//		NMSItemStack nmsitem = NMSItemStack.asNMSItemStack(item);
+//		NBTComponent nbt = nmsitem.getNBT();
+//		nbt.setInt("s", 1);
+//		PR(nbt.getInt("s") + "");
+		e.getPlayer().getInventory().addItem(getItem("M4A1"));
 
 	}
 
@@ -91,7 +91,7 @@ public class ZaoGun extends JavaPlugin implements Listener {
 		File tag = new File(path);
 		File[] listfile = tag.listFiles();
 		if (listfile == null || listfile.length == 0) {
-			String[] species = new String[] { "Scopes.yml", "Barrel.yml" };
+			String[] species = new String[] { "scopes.yml", "barrels.yml" };
 			for (int i = 0; i < species.length; i++) {
 				String spec = species[i];
 				File dFile = grabDefaults(tag, spec);
@@ -105,7 +105,7 @@ public class ZaoGun extends JavaPlugin implements Listener {
 		}
 		for (int i = 0; i < listfile.length; i++) {
 			File file = listfile[i];
-			this.fillHashMaps(loadConfig(file, p), file.getName().substring(0, file.getName().length() - 4));
+			this.fillHashMaps(loadConfig(file, p), file.getName().substring(0, file.getName().length() - 5));
 
 		}
 	}
@@ -170,6 +170,7 @@ public class ZaoGun extends JavaPlugin implements Listener {
 		return config;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void fillHashMaps(YamlConfiguration config, String type) {
 		for (String string : config.getKeys(true)) {
 			Object obj = config.get(string);
@@ -182,8 +183,7 @@ public class ZaoGun extends JavaPlugin implements Listener {
 				obj = ((String) obj).replaceAll("&", "§");
 				strings.put(string, (String) obj);
 			} else if (obj instanceof List<?>) {
-				List<?> list = (List<?>) obj;
-
+				stringlists.put(string, (List<String>) obj);
 			}
 		}
 		for (String parent : config.getKeys(false)) {
@@ -223,6 +223,7 @@ public class ZaoGun extends JavaPlugin implements Listener {
 	}
 
 	public ItemStack getItem(String parent) {
+		Bukkit.broadcastMessage("try to get "+parent);
 		Material material = Material.valueOf(strings.get(parent + ".Item_Information.Item_Material"));
 		ItemStack item = new ItemStack(material);
 		this.setDisplayName(item, strings.get(parent + ".Item_Information.Item_Name"));
@@ -230,6 +231,14 @@ public class ZaoGun extends JavaPlugin implements Listener {
 		NMSItemStack nmsitem = NMSItemStack.asNMSItemStack(item);
 		NBTComponent nbt = nmsitem.getNBT();
 		nbt.setString("parent", parent);
+		//default part set
+		List<String> parts = stringlists.get(parent+".DefaultParts");
+		if(parts!=null){
+			for(String part :parts){
+				nbt.setString(strings.get(part), part);
+			}
+		}
+		//
 		nmsitem.setNBT(nbt);
 		return nmsitem.asNewItemStack();
 	}
