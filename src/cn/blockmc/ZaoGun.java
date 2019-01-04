@@ -15,6 +15,8 @@ import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Snowball;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -30,6 +32,11 @@ import cn.blockmc.inventory.GunPartInventory;
 import net.minecraft.server.v1_13_R1.NBTTagCompound;
 
 public class ZaoGun extends JavaPlugin implements Listener {
+	public static final String GUNNODE = "Gun";
+	public static final String SCOPENODE = "Scope";
+	public static final String BARRELNODE = "Barrel";
+	public static final String BULLETNODE = "BULLET";
+
 	public Map<String, List<String>> stringlists = new HashMap<String, List<String>>();
 	public Map<String, Integer> ints = new HashMap<String, Integer>();
 	public Map<String, String> strings = new HashMap<String, String>();
@@ -51,42 +58,43 @@ public class ZaoGun extends JavaPlugin implements Listener {
 
 	@EventHandler
 	public void c(PlayerInteractEntityEvent e) {
-//		ItemStack item = new ItemStack(Material.EGG);
-//		NMSItemStack nmsitem = NMSItemStack.asNMSItemStack(item);
-//		NBTComponent nbt = nmsitem.getNBT();
-//		nbt.setInt("s", 1);
-//		PR(nbt.getInt("s") + "");
+		// ItemStack item = new ItemStack(Material.EGG);
+		// NMSItemStack nmsitem = NMSItemStack.asNMSItemStack(item);
+		// NBTComponent nbt = nmsitem.getNBT();
+		// nbt.setInt("s", 1);
+		// PR(nbt.getInt("s") + "");
 		e.getPlayer().getInventory().addItem(getItem("M4A1"));
 
 	}
+
 	@EventHandler
-	public void ch(AsyncPlayerChatEvent e){
+	public void ch(AsyncPlayerChatEvent e) {
 		String parent = e.getMessage();
-		e.getPlayer().getInventory().addItem(getItem(parent,10));
-		e.getPlayer().updateInventory();
+		e.getPlayer().getInventory().addItem(getItem(parent, 10));
 	}
-//
-//	@EventHandler
-//	public void cc(PlayerMoveEvent e) {
-//		Player p = e.getPlayer();
-//		// ItemStack item = new ItemStack(Material.DIAMOND_AXE);
-//		// NMSItemStack nmsitem = NMSItemStack.asNMSItemStack(item);
-//		// NBTComponent nbt = nmsitem.getNBT().setString("scope", "4xScope");
-//		// nmsitem.setNBT(nbt);
-//		// p.getInventory().addItem(nmsitem.asNewItemStack());
-////		NMSItemStack nms = NMSItemStack.asNMSItemStack(e.getPlayer().getInventory().getItemInMainHand());
-////		NBTTagCompound n = (NBTTagCompound) nms.getNBT().getTag();
-////		n.getKeys().forEach(key -> {
-////			Bukkit.broadcastMessage(key + " " + n.get(key));
-////		});
-//	}
+	//
+	// @EventHandler
+	// public void cc(PlayerMoveEvent e) {
+	// Player p = e.getPlayer();
+	// // ItemStack item = new ItemStack(Material.DIAMOND_AXE);
+	// // NMSItemStack nmsitem = NMSItemStack.asNMSItemStack(item);
+	// // NBTComponent nbt = nmsitem.getNBT().setString("scope", "4xScope");
+	// // nmsitem.setNBT(nbt);
+	// // p.getInventory().addItem(nmsitem.asNewItemStack());
+	//// NMSItemStack nms =
+	// NMSItemStack.asNMSItemStack(e.getPlayer().getInventory().getItemInMainHand());
+	//// NBTTagCompound n = (NBTTagCompound) nms.getNBT().getTag();
+	//// n.getKeys().forEach(key -> {
+	//// Bukkit.broadcastMessage(key + " " + n.get(key));
+	//// });
+	// }
 
 	public void loadParts(Player p) {
 		String path = this.getDataFolder() + "/parts";
 		File tag = new File(path);
 		File[] listfile = tag.listFiles();
 		if (listfile == null || listfile.length == 0) {
-			String[] species = new String[] { "scopes.yml", "barrels.yml","bullets.yml" };
+			String[] species = new String[] { "scopes.yml", "barrels.yml", "bullets.yml" };
 			for (int i = 0; i < species.length; i++) {
 				String spec = species[i];
 				File dFile = grabDefaults(tag, spec);
@@ -135,7 +143,7 @@ public class ZaoGun extends JavaPlugin implements Listener {
 		for (int i = 0; i < lenth; i++) {
 			File file = arrayOfFile1[i];
 			if (file.getName().endsWith(".yml")) {
-				fillHashMaps(loadConfig(file, p), "Gun");
+				fillHashMaps(loadConfig(file, p), GUNNODE);
 			}
 		}
 		// completeList();
@@ -180,7 +188,7 @@ public class ZaoGun extends JavaPlugin implements Listener {
 			} else if (obj instanceof List<?>) {
 				stringlists.put(string, (List<String>) obj);
 			}
-			Bukkit.broadcastMessage(obj+"");
+			Bukkit.broadcastMessage(obj + "");
 		}
 		for (String parent : config.getKeys(false)) {
 			if (type != null) {
@@ -217,28 +225,29 @@ public class ZaoGun extends JavaPlugin implements Listener {
 		}
 		return null;
 	}
-	public ItemStack getItem(String parent){
-		return getItem(parent,1);
+
+	public ItemStack getItem(String parent) {
+		return getItem(parent, 1);
 	}
 
-	public ItemStack getItem(String parent,int amount) {
-		Bukkit.broadcastMessage("try to get "+parent);
+	public ItemStack getItem(String parent, int amount) {
+		Bukkit.broadcastMessage("try to get " + parent);
 		Material material = Material.valueOf(strings.get(parent + ".Item_Information.Item_Material"));
-		ItemStack item = new ItemStack(material,amount);
+		ItemStack item = new ItemStack(material, amount);
 		setDisplayName(item, strings.get(parent + ".Item_Information.Item_Name"));
 		setLore(item, strings.get(parent + ".Item_Information.Item_Lore"));
-		
+
 		NMSItemStack nmsitem = NMSItemStack.asNMSItemStack(item);
 		NBTComponent nbt = nmsitem.getNBT();
 		nbt.setString("parent", parent);
-		//default part set
-		List<String> parts = stringlists.get(parent+".DefaultParts");
-		if(parts!=null){
-			for(String part :parts){
+		// default part set
+		List<String> parts = stringlists.get(parent + ".DefaultParts");
+		if (parts != null) {
+			for (String part : parts) {
 				nbt.setString(strings.get(part), part);
 			}
 		}
-		nmsitem.setMaxStack(ints.getOrDefault(parent+".Item_Information.Item_Max_Stack", 1));
+		nmsitem.setMaxStack(ints.getOrDefault(parent + ".Item_Information.Item_Max_Stack", 1));
 		nmsitem.setNBT(nbt);
 		return nmsitem.asNewItemStack();
 	}
@@ -256,26 +265,35 @@ public class ZaoGun extends JavaPlugin implements Listener {
 		item.setItemMeta(m);
 		return item;
 	}
-	
+
 	@EventHandler
-	public void interact(PlayerInteractEvent e){
+	public void interact(PlayerInteractEvent e) {
 		Player player = e.getPlayer();
 		ItemStack item = e.getItem();
-		if(item==null||item.getType()==Material.AIR){
+		if (item == null || item.getType() == Material.AIR) {
 			return;
 		}
 		String parent = NMSItemStack.asNMSItemStack(item).getNBT().getString("parent");
-		if(parent.equals("")){
+		if (parent.equals("")) {
 			return;
 		}
-		
-		if(e.getAction()==Action.RIGHT_CLICK_AIR){
-			
+		String type = strings.get(parent);
+		if (type.equals(GUNNODE)) {
+			shootOnce(player,parent);
 		}
-		
+
 	}
-	@EventHandler
-	public void shootOnce(){
+	public boolean shootOnce(Player player,String gun) {
+		String bullet = strings.getOrDefault(gun+".Weapon_Information.Bullet", "43mm_Bullet");
+		int damage = ints.getOrDefault(gun+".Weapon_Information.Shoot_Damage", 5);
+		int offset_damage = ints.getOrDefault(gun+".Weapon_Information.Offset_Damage",0);
+		int shoot_speed = ints.getOrDefault(gun+".Weapon_Information.Shoot_Speed",60);
+		int shoot_Range = ints.getOrDefault(gun+".Weapon_Information.Shoot_Range",100);
+		int recoil = ints.getOrDefault(gun+".Weapon_Information.Recoil", 0);
 		
+		Projectile pro = player.launchProjectile(Snowball.class);
+		pro.setVelocity(player.getVelocity());
+		
+		return false;
 	}
 }

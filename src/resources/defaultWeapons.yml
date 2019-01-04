@@ -15,3 +15,5 @@ M4A1:
     Shoot_Speed: 10
     Shoot_Range: 100
     Bullet: "43mm_Bullet"
+    Recoil: 5
+  

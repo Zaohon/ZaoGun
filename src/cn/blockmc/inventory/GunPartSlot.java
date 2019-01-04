@@ -1,7 +1,9 @@
 package cn.blockmc.inventory;
 
+import cn.blockmc.ZaoGun;
+
 public enum GunPartSlot {
-	SCOPE(2,"scope"),BARREL(5,"barrel");
+	SCOPE(2,ZaoGun.SCOPENODE),BARREL(5,ZaoGun.BARRELNODE);
 
 	private final int id;
 	private final String typenode;
